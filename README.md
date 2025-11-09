@@ -1,3 +1,5 @@
+This project uses Somnia Data Streams to listen to data on the blockchain. The projects listens to the data streams and if there is a transfer transaction, a noise / beat is played by this application. Depending on the size of the transfer, the noise / beat is affected accordingly. This helps the user keep a ongoing pulse of the ticker or whatever they are monitoring like STT. 
+
 ## Getting Started
 
 Install dependences:
