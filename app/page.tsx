@@ -19,7 +19,7 @@ function TransactionCard({ tx }: { tx: Transaction }) {
 
   const shortenAddress = (addr: string | null) => {
     if (!addr) return 'Contract Creation'
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+    return `${addr.slice(0, 6)}…${addr.slice(-4)}`
   }
 
   return (
@@ -101,7 +101,7 @@ export default function Home() {
             <div className="flex flex-wrap items-center justify-center gap-3">
               <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full backdrop-blur-sm border border-gray-200 shadow-sm">
                 <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : error ? 'bg-red-500' : 'bg-yellow-500 animate-pulse'}`}></div>
-                <span className="text-xs text-gray-700">{isConnected ? 'Connected' : error ? 'Disconnected' : 'Connecting...'}</span>
+                <span className="text-xs text-gray-700">{isConnected ? 'Connected' : error ? 'Disconnected' : 'Connecting…'}</span>
               </div>
               
               <p className="text-sm text-gray-700 font-medium">
