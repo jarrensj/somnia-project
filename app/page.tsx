@@ -90,7 +90,7 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
 
 export default function Home() {
   const [isListening, setIsListening] = useState(false)
-  const [network, setNetwork] = useState<'testnet' | 'mainnet'>('testnet')
+  const [network, setNetwork] = useState<'testnet' | 'mainnet'>('mainnet')
   const [isMuted, setIsMuted] = useState(false)
   const { transactions, stats, isConnected, error, network: networkInfo } = useBlockchain(network, isListening)
   const { toggleMute } = useNotifications()
