@@ -30,6 +30,16 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
     return `${addr.slice(0, 6)}…${addr.slice(-4)}`
   }
 
+  const formatSTT = (value: string) => {
+    const numValue = parseFloat(value)
+    if (numValue === 0) return '0.0000'
+    if (numValue < 0.0001) {
+      // Show more decimals for very small values
+      return numValue.toFixed(8)
+    }
+    return numValue.toFixed(4)
+  }
+
   const TypeIcon = typeVariants[tx.type].icon
 
   return (
@@ -76,7 +86,7 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground font-medium min-w-[90px]">Amount:</span>
               <Badge variant="outline" className="text-amber-600 dark:text-amber-400 font-semibold">
-                {parseFloat(tx.value).toFixed(4)} STT
+                {formatSTT(tx.value)} STT
               </Badge>
             </div>
           )}
@@ -103,13 +113,23 @@ export default function Home() {
   const [network, setNetwork] = useState<'testnet' | 'mainnet'>('mainnet')
   const [isMuted, setIsMuted] = useState(false)
   const [showOnlySTTTransfers, setShowOnlySTTTransfers] = useState(true)
+  const [hideZeroSTT, setHideZeroSTT] = useState(true)
   const { transactions, stats, isConnected, error, network: networkInfo } = useBlockchain(network, isListening)
   const { toggleMute } = useNotifications()
 
-  // Filter transactions based on the checkbox
-  const filteredTransactions = showOnlySTTTransfers
-    ? transactions.filter(tx => tx.type === 'transfer' && parseFloat(tx.value) > 0)
-    : transactions
+  // Filter transactions based on the checkboxes
+  let filteredTransactions = transactions
+  
+  if (showOnlySTTTransfers) {
+    filteredTransactions = filteredTransactions.filter(tx => tx.type === 'transfer')
+  }
+  
+  if (hideZeroSTT) {
+    filteredTransactions = filteredTransactions.filter(tx => {
+      const value = parseFloat(tx.value)
+      return !isNaN(value) && value >= 0.0005
+    })
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -160,6 +180,15 @@ export default function Home() {
                   onCheckedChange={setShowOnlySTTTransfers}
                 />
                 <span className="text-sm font-medium">Show only STT Transfers</span>
+              </label>
+              
+              {/* Hide Zero STT Filter */}
+              <label className="flex items-center gap-2 bg-card border rounded-lg px-4 py-2 shadow-sm cursor-pointer hover:bg-accent/50 transition-all">
+                <Switch
+                  checked={hideZeroSTT}
+                  onCheckedChange={setHideZeroSTT}
+                />
+                <span className="text-sm font-medium">Hide STT under 0.0005</span>
               </label>
               
               {/* Start/Stop Listening Button */}
