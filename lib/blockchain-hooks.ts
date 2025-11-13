@@ -10,6 +10,7 @@ interface NetworkConfig {
   rpcUrl: string
   chainId: number
   symbol: string
+  explorerUrl: string
 }
 
 const NETWORKS: Record<NetworkType, NetworkConfig> = {
@@ -17,13 +18,15 @@ const NETWORKS: Record<NetworkType, NetworkConfig> = {
     name: 'Somnia Dream Testnet',
     rpcUrl: 'https://dream-rpc.somnia.network',
     chainId: 50312,
-    symbol: 'STT'
+    symbol: 'STT',
+    explorerUrl: 'https://shannon-explorer.somnia.network'
   },
   mainnet: {
     name: 'Somnia Mainnet',
     rpcUrl: 'https://rpc.somnia.network',
     chainId: 50311,
-    symbol: 'STT'
+    symbol: 'STT',
+    explorerUrl: 'https://explorer.somnia.network'
   }
 }
 

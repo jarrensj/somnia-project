@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useBlockchain, type Transaction } from '@/lib/blockchain-hooks'
 import { motion, AnimatePresence } from 'framer-motion'
 
-function TransactionCard({ tx }: { tx: Transaction }) {
+function TransactionCard({ tx, explorerUrl }: { tx: Transaction; explorerUrl: string }) {
   const typeColors = {
     transfer: 'from-blue-100 to-blue-200 border-blue-300',
     contract: 'from-purple-100 to-purple-200 border-purple-300',
@@ -15,6 +15,12 @@ function TransactionCard({ tx }: { tx: Transaction }) {
     transfer: '📤',
     contract: '📄',
     other: '⚡'
+  }
+
+  const typeLabels = {
+    transfer: 'Transfer',
+    contract: 'Contract Creation',
+    other: 'Contract Call'
   }
 
   const shortenAddress = (addr: string | null) => {
@@ -30,33 +36,53 @@ function TransactionCard({ tx }: { tx: Transaction }) {
       transition={{ duration: 0.3, ease: "easeOut" }}
       className={`bg-gradient-to-r ${typeColors[tx.type]} border rounded-lg p-3 backdrop-blur-sm overflow-hidden shadow-sm`}
     >
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="text-xl">{typeIcons[tx.type]}</span>
-          <span className="text-xs font-mono text-gray-600">
-            {shortenAddress(tx.hash)}
-          </span>
+          <span className="text-sm font-semibold text-gray-800">{typeLabels[tx.type]}</span>
         </div>
-        <span className="text-xs text-gray-600">
+        <span className="text-xs text-gray-500">
           {new Date(tx.timestamp).toLocaleTimeString()}
         </span>
       </div>
-      <div className="flex items-center justify-between text-sm">
+      
+      <div className="space-y-1.5">
         <div className="flex items-center gap-2">
-          <span className="text-gray-600">From:</span>
-          <code className="text-green-700 font-mono text-xs">{shortenAddress(tx.from)}</code>
+          <span className="text-xs text-gray-500 font-medium min-w-[90px]">TX Hash:</span>
+          <code className="text-xs font-mono text-gray-700">{shortenAddress(tx.hash)}</code>
         </div>
-        <span className="text-gray-600">→</span>
+        
         <div className="flex items-center gap-2">
-          <span className="text-gray-600">To:</span>
-          <code className="text-blue-700 font-mono text-xs">{shortenAddress(tx.to)}</code>
+          <span className="text-xs text-gray-500 font-medium min-w-[90px]">From Wallet:</span>
+          <code className="text-xs font-mono text-green-700">{shortenAddress(tx.from)}</code>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500 font-medium min-w-[90px]">
+            {tx.type === 'transfer' ? 'To Wallet:' : tx.type === 'contract' ? 'Deploying:' : 'Contract:'}
+          </span>
+          <code className="text-xs font-mono text-blue-700">{shortenAddress(tx.to)}</code>
+        </div>
+        
+        {parseFloat(tx.value) > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 font-medium min-w-[90px]">Amount:</span>
+            <span className="text-sm text-amber-600 font-semibold">{parseFloat(tx.value).toFixed(4)} STT</span>
+          </div>
+        )}
+        
+        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-300/50">
+          <a
+            href={`${explorerUrl}/tx/${tx.hash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-blue-600 hover:text-blue-800 hover:underline font-medium flex items-center gap-1"
+          >
+            🔍 View on Shannon Explorer
+            <span className="text-[10px]">↗</span>
+          </a>
         </div>
       </div>
-      {parseFloat(tx.value) > 0 && (
-        <div className="mt-2 text-right">
-          <span className="text-amber-600 font-semibold">{parseFloat(tx.value).toFixed(4)} STT</span>
-        </div>
-      )}
     </motion.div>
   )
 }
@@ -138,7 +164,7 @@ export default function Home() {
                 </motion.div>
               ) : (
                 transactions.map((tx) => (
-                  <TransactionCard key={tx.hash} tx={tx} />
+                  <TransactionCard key={tx.hash} tx={tx} explorerUrl={networkInfo.explorerUrl} />
                 ))
               )}
             </AnimatePresence>
