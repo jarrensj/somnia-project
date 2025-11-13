@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { ethers } from 'ethers'
+import { useNotifications } from './use-notifications'
 
 export type NetworkType = 'testnet' | 'mainnet'
 
@@ -45,31 +46,8 @@ export interface NetworkStats {
   totalTransactions: number
 }
 
-// Play notification sound
-const playNotificationSound = () => {
-  try {
-    // Create a simple beep sound using Web Audio API
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-    const oscillator = audioContext.createOscillator()
-    const gainNode = audioContext.createGain()
-    
-    oscillator.connect(gainNode)
-    gainNode.connect(audioContext.destination)
-    
-    oscillator.frequency.value = 800 // Frequency in Hz
-    oscillator.type = 'sine'
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5)
-    
-    oscillator.start(audioContext.currentTime)
-    oscillator.stop(audioContext.currentTime + 0.5)
-  } catch (error) {
-    console.error('Failed to play notification sound:', error)
-  }
-}
-
 export function useBlockchain(network: NetworkType, isListening: boolean) {
+  const { playNotification } = useNotifications()
   const [provider, setProvider] = useState<ethers.JsonRpcProvider | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [stats, setStats] = useState<NetworkStats>({
@@ -181,11 +159,7 @@ export function useBlockchain(network: NetworkType, isListening: boolean) {
         
         // Play staggered sounds for each qualifying transaction
         if (soundCount > 0) {
-          for (let i = 0; i < soundCount; i++) {
-            setTimeout(() => {
-              playNotificationSound()
-            }, i * 600) // 600ms delay between each sound
-          }
+          playNotification('transfer', soundCount, 600)
         }
 
         // Track transaction count for TPS calculation

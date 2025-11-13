@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useBlockchain, type Transaction } from '@/lib/blockchain-hooks'
+import { useNotifications } from '@/lib/use-notifications'
 import { motion, AnimatePresence } from 'framer-motion'
 
 function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; explorerUrl: string; networkType: 'testnet' | 'mainnet' }) {
@@ -90,7 +91,9 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
 export default function Home() {
   const [isListening, setIsListening] = useState(false)
   const [network, setNetwork] = useState<'testnet' | 'mainnet'>('testnet')
+  const [isMuted, setIsMuted] = useState(false)
   const { transactions, stats, isConnected, error, network: networkInfo } = useBlockchain(network, isListening)
+  const { toggleMute } = useNotifications()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-100 via-gray-100 to-slate-100 text-gray-900">
@@ -143,7 +146,7 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-3">
               <button
                 onClick={() => setIsListening(!isListening)}
                 disabled={!isConnected}
@@ -154,6 +157,20 @@ export default function Home() {
                 }`}
               >
                 {isListening ? '⏸️ Stop Listening' : '▶️ Start Listening'}
+              </button>
+              
+              <button
+                onClick={() => {
+                  const newMutedState = toggleMute()
+                  setIsMuted(newMutedState)
+                }}
+                className={`px-6 py-3 rounded-full font-semibold transition-all shadow-lg text-base ${
+                  isMuted
+                    ? 'bg-gray-400 hover:bg-gray-500 text-white'
+                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                }`}
+              >
+                {isMuted ? '🔇 Unmute' : '🔊 Mute'}
               </button>
             </div>
             
