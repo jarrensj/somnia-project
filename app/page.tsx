@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useBlockchain, type Transaction } from '@/lib/blockchain-hooks'
 import { useNotifications } from '@/lib/use-notifications'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, FileText, Zap, ExternalLink, Rocket, FlaskConical, Pause, Play, VolumeX, Volume2, AlertTriangle, Radio } from 'lucide-react'
+import { Send, FileText, Zap, ExternalLink, Rocket, FlaskConical, Pause, Play, VolumeX, Volume2, AlertTriangle, Radio, Filter, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -114,8 +114,27 @@ export default function Home() {
   const [isMuted, setIsMuted] = useState(false)
   const [showOnlySTTTransfers, setShowOnlySTTTransfers] = useState(true)
   const [hideZeroSTT, setHideZeroSTT] = useState(true)
+  const [showFiltersDropdown, setShowFiltersDropdown] = useState(false)
+  const filtersDropdownRef = useRef<HTMLDivElement>(null)
   const { transactions, stats, isConnected, error, network: networkInfo } = useBlockchain(network, isListening)
   const { toggleMute } = useNotifications()
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filtersDropdownRef.current && !filtersDropdownRef.current.contains(event.target as Node)) {
+        setShowFiltersDropdown(false)
+      }
+    }
+
+    if (showFiltersDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showFiltersDropdown])
 
   // Filter transactions based on the checkboxes
   let filteredTransactions = transactions
@@ -173,23 +192,41 @@ export default function Home() {
                 </Button>
               </div>
 
-              {/* STT Transfer Filter */}
-              <label className="flex items-center gap-2 bg-card border rounded-lg px-4 py-2 shadow-sm cursor-pointer hover:bg-accent/50 transition-all">
-                <Switch
-                  checked={showOnlySTTTransfers}
-                  onCheckedChange={setShowOnlySTTTransfers}
-                />
-                <span className="text-sm font-medium">Show only STT Transfers</span>
-              </label>
-              
-              {/* Hide Zero STT Filter */}
-              <label className="flex items-center gap-2 bg-card border rounded-lg px-4 py-2 shadow-sm cursor-pointer hover:bg-accent/50 transition-all">
-                <Switch
-                  checked={hideZeroSTT}
-                  onCheckedChange={setHideZeroSTT}
-                />
-                <span className="text-sm font-medium">Hide STT under 0.0005</span>
-              </label>
+              {/* Filters Dropdown */}
+              <div className="relative" ref={filtersDropdownRef}>
+                <Button
+                  variant="outline"
+                  size="default"
+                  onClick={() => setShowFiltersDropdown(!showFiltersDropdown)}
+                  className="gap-2 shadow-sm"
+                >
+                  <Filter size={16} />
+                  Filters
+                  <ChevronDown size={16} className={`transition-transform ${showFiltersDropdown ? 'rotate-180' : ''}`} />
+                </Button>
+                
+                {showFiltersDropdown && (
+                  <div className="absolute top-full mt-2 left-0 bg-card border rounded-lg shadow-lg p-3 space-y-3 z-50 min-w-[280px]">
+                    <label className="flex items-center justify-between gap-3 cursor-pointer hover:bg-accent/50 p-2 rounded-md transition-all">
+                      <span className="text-sm font-medium">Show only STT Transfers</span>
+                      <Switch
+                        checked={showOnlySTTTransfers}
+                        onCheckedChange={setShowOnlySTTTransfers}
+                      />
+                    </label>
+                    
+                    <Separator />
+                    
+                    <label className="flex items-center justify-between gap-3 cursor-pointer hover:bg-accent/50 p-2 rounded-md transition-all">
+                      <span className="text-sm font-medium">Hide STT under 0.0005</span>
+                      <Switch
+                        checked={hideZeroSTT}
+                        onCheckedChange={setHideZeroSTT}
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
               
               {/* Start/Stop Listening Button */}
               <Button
