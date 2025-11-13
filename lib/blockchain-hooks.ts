@@ -183,8 +183,8 @@ export function useBlockchain(network: NetworkType, isListening: boolean) {
           totalTransactions: prev.totalTransactions + txCount
         }))
 
-        // Update transactions list (keep last 50)
-        setTransactions(prev => [...newTxs, ...prev].slice(0, 50))
+        // Update transactions list (keep most recent 500)
+        setTransactions(prev => [...newTxs, ...prev].slice(0, 500))
       } catch (err) {
         console.error('Error handling block:', err)
       }
