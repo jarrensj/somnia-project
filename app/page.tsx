@@ -49,8 +49,24 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
     >
-      <Card className="overflow-hidden">
-        <CardHeader className="pb-3">
+      <motion.div
+        initial={{ 
+          backgroundColor: 'rgba(34, 211, 238, 0.4)',
+          boxShadow: '0 0 40px rgba(34, 211, 238, 0.9), 0 0 80px rgba(34, 211, 238, 0.6), inset 0 0 40px rgba(34, 211, 238, 0.5)',
+          borderColor: 'rgba(34, 211, 238, 1)',
+          scale: 1.02
+        }}
+        animate={{ 
+          backgroundColor: 'rgba(34, 211, 238, 0)',
+          boxShadow: '0 0 0px rgba(34, 211, 238, 0), 0 0 0px rgba(34, 211, 238, 0), inset 0 0 0px rgba(34, 211, 238, 0)',
+          borderColor: 'rgba(34, 211, 238, 0)',
+          scale: 1
+        }}
+        transition={{ duration: 3, ease: "easeOut" }}
+        className="rounded-lg border-2"
+      >
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Badge variant={typeVariants[tx.type].variant} className="gap-1.5">
@@ -104,6 +120,7 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
           </a>
         </CardContent>
       </Card>
+      </motion.div>
     </motion.div>
   )
 }
