@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useBlockchain, type Transaction } from '@/lib/blockchain-hooks'
 import { useNotifications } from '@/lib/use-notifications'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Send, FileText, Zap, ExternalLink, Rocket, FlaskConical, Pause, Play, VolumeX, Volume2, AlertTriangle, Radio } from 'lucide-react'
 
 function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; explorerUrl: string; networkType: 'testnet' | 'mainnet' }) {
   const typeColors = {
@@ -12,10 +13,11 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
     other: 'from-gray-100 to-gray-200 border-gray-300'
   }
 
-  const typeIcons = {
-    transfer: '📤',
-    contract: '📄',
-    other: '⚡'
+  const TypeIcon = ({ type }: { type: 'transfer' | 'contract' | 'other' }) => {
+    const iconProps = { size: 20, className: "text-gray-700" }
+    if (type === 'transfer') return <Send {...iconProps} />
+    if (type === 'contract') return <FileText {...iconProps} />
+    return <Zap {...iconProps} />
   }
 
   const typeLabels = {
@@ -49,7 +51,7 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xl">{typeIcons[tx.type]}</span>
+          <TypeIcon type={tx.type} />
           <span className="text-sm font-semibold text-gray-800">{typeLabels[tx.type]}</span>
         </div>
         <span className="text-xs text-gray-500">
@@ -89,8 +91,8 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
             rel="noopener noreferrer"
             className="text-xs text-blue-600 hover:text-blue-800 hover:underline font-medium flex items-center gap-1"
           >
-            🔍 View on {networkType === 'testnet' ? 'Shannon Explorer' : 'Somnia Explorer'}
-            <span className="text-[10px]">↗</span>
+            <ExternalLink size={14} />
+            View on {networkType === 'testnet' ? 'Shannon Explorer' : 'Somnia Explorer'}
           </a>
         </div>
       </div>
@@ -122,52 +124,48 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-100 via-gray-100 to-slate-100 text-gray-900">
-      {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          </div>
-
-      <div className="relative z-10 p-4 md:p-6">
+    <div className="min-h-screen">
+      <div className="p-4 md:p-6">
         {/* Live Transactions Feed */}
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col gap-3 mb-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">Live Transactions</h2>
-              <div className="text-lg font-semibold text-purple-600">
-                {stats.totalTransactions.toLocaleString()} <span className="text-sm text-gray-600">total</span>
+            <div className="flex items-center justify-end">
+              <div className="text-lg font-semibold">
+                {stats.totalTransactions.toLocaleString()} <span className="text-sm">total</span>
               </div>
             </div>
 
-            {/* Network Selector */}
-            <div className="flex justify-center">
+            {/* Controls Row */}
+            <div className="flex justify-center items-center gap-3 flex-wrap">
+              {/* Network Selector */}
               <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full p-1 shadow-md inline-flex">
-                <button
-                  onClick={() => {
-                    if (isListening) setIsListening(false)
-                    setNetwork('testnet')
-                  }}
-                  className={`px-6 py-2 rounded-full font-semibold transition-all text-sm ${
-                    network === 'testnet'
-                      ? 'bg-blue-500 text-white shadow-md'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  🧪 Testnet
-                </button>
                 <button
                   onClick={() => {
                     if (isListening) setIsListening(false)
                     setNetwork('mainnet')
                   }}
-                  className={`px-6 py-2 rounded-full font-semibold transition-all text-sm ${
+                  className={`px-4 py-2 rounded-full font-semibold transition-all text-sm flex items-center gap-2 ${
                     network === 'mainnet'
                       ? 'bg-purple-500 text-white shadow-md'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  🚀 Mainnet
+                  <Rocket size={16} />
+                  Mainnet
+                </button>
+                <button
+                  onClick={() => {
+                    if (isListening) setIsListening(false)
+                    setNetwork('testnet')
+                  }}
+                  className={`px-4 py-2 rounded-full font-semibold transition-all text-sm flex items-center gap-2 ${
+                    network === 'testnet'
+                      ? 'bg-blue-500 text-white shadow-md'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <FlaskConical size={16} />
+                  Testnet
                 </button>
               </div>
             </div>
@@ -199,27 +197,48 @@ export default function Home() {
               <button
                 onClick={() => setIsListening(!isListening)}
                 disabled={!isConnected}
-                className={`px-8 py-3 rounded-full font-semibold transition-all shadow-lg text-base ${
+                className={`px-6 py-2 rounded-full font-semibold transition-all shadow-lg text-sm flex items-center gap-2 ${
                   isListening
                     ? 'bg-red-500 hover:bg-red-600 text-white'
                     : 'bg-green-500 hover:bg-green-600 text-white disabled:bg-gray-300 disabled:cursor-not-allowed'
                 }`}
               >
-                {isListening ? '⏸️ Stop Listening' : '▶️ Start Listening'}
+                {isListening ? (
+                  <>
+                    <Pause size={16} />
+                    Stop Listening
+                  </>
+                ) : (
+                  <>
+                    <Play size={16} />
+                    Start Listening
+                  </>
+                )}
               </button>
               
+              {/* Mute Button */}
               <button
                 onClick={() => {
                   const newMutedState = toggleMute()
                   setIsMuted(newMutedState)
                 }}
-                className={`px-6 py-3 rounded-full font-semibold transition-all shadow-lg text-base ${
+                className={`px-5 py-2 rounded-full font-semibold transition-all shadow-lg text-sm flex items-center gap-2 ${
                   isMuted
                     ? 'bg-gray-400 hover:bg-gray-500 text-white'
                     : 'bg-blue-500 hover:bg-blue-600 text-white'
                 }`}
               >
-                {isMuted ? '🔇 Unmute' : '🔊 Mute'}
+                {isMuted ? (
+                  <>
+                    <VolumeX size={16} />
+                    Unmute
+                  </>
+                ) : (
+                  <>
+                    <Volume2 size={16} />
+                    Mute
+                  </>
+                )}
               </button>
             </div>
             
@@ -242,7 +261,7 @@ export default function Home() {
               className="bg-red-100 border border-red-300 rounded-lg p-4 mb-4 shadow-sm"
             >
               <div className="flex items-center gap-2">
-                <span className="text-red-600">⚠️</span>
+                <AlertTriangle size={18} className="text-red-600" />
                 <p className="text-sm text-red-700">{error}</p>
           </div>
             </motion.div>
@@ -252,14 +271,47 @@ export default function Home() {
             <AnimatePresence mode="popLayout">
               {filteredTransactions.length === 0 ? (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="text-center py-12 text-gray-600"
+                  className="text-center py-16"
                 >
-                  <div className="text-4xl mb-3">{isListening ? '⏳' : '▶️'}</div>
-                  <p>{isListening ? 'Waiting for transactions…' : 'Click "Start Listening" to begin'}</p>
-                  <p className="text-sm mt-2">{isListening ? 'Listening to real-time blockchain activity' : 'Press the button above to start monitoring transactions'}</p>
+                  {isListening ? (
+                    <div className="flex flex-col items-center gap-6">
+                      <div className="relative">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                          className="w-20 h-20 border-4 border-blue-200 border-t-blue-500 rounded-full"
+                        />
+                        <motion.div
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                          className="absolute inset-0 flex items-center justify-center"
+                        >
+                          <Radio size={32} className="text-blue-600" />
+                        </motion.div>
+                      </div>
+                      <div>
+                        <p className="text-lg font-semibold mb-2">Listening for transactions...</p>
+                        <p className="text-sm text-gray-500">Real-time blockchain monitoring active</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <motion.button
+                      onClick={() => setIsListening(true)}
+                      disabled={!isConnected}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex flex-col items-center gap-4 mx-auto p-8 rounded-2xl bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:border-gray-300 disabled:hover:bg-white"
+                    >
+                      <Play size={48} className="text-blue-600" />
+                      <div>
+                        <p className="text-lg font-semibold mb-1">Click to Start Listening</p>
+                        <p className="text-sm text-gray-500">Monitor live blockchain transactions</p>
+                      </div>
+                    </motion.button>
+                  )}
                 </motion.div>
               ) : (
                 filteredTransactions.map((tx) => (
