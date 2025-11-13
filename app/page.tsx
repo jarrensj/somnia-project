@@ -31,6 +31,16 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
     return `${addr.slice(0, 6)}…${addr.slice(-4)}`
   }
 
+  const formatSTT = (value: string) => {
+    const numValue = parseFloat(value)
+    if (numValue === 0) return '0.0000'
+    if (numValue < 0.0001) {
+      // Show more decimals for very small values
+      return numValue.toFixed(8)
+    }
+    return numValue.toFixed(4)
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -70,7 +80,7 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
         {parseFloat(tx.value) > 0 && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500 font-medium min-w-[90px]">Amount:</span>
-            <span className="text-sm text-amber-600 font-semibold">{parseFloat(tx.value).toFixed(4)} STT</span>
+            <span className="text-sm text-amber-600 font-semibold">{formatSTT(tx.value)} STT</span>
           </div>
         )}
         
@@ -95,13 +105,23 @@ export default function Home() {
   const [network, setNetwork] = useState<'testnet' | 'mainnet'>('mainnet')
   const [isMuted, setIsMuted] = useState(false)
   const [showOnlySTTTransfers, setShowOnlySTTTransfers] = useState(true)
+  const [hideZeroSTT, setHideZeroSTT] = useState(true)
   const { transactions, stats, isConnected, error, network: networkInfo } = useBlockchain(network, isListening)
   const { toggleMute } = useNotifications()
 
-  // Filter transactions based on the checkbox
-  const filteredTransactions = showOnlySTTTransfers
-    ? transactions.filter(tx => tx.type === 'transfer' && parseFloat(tx.value) > 0)
-    : transactions
+  // Filter transactions based on the checkboxes
+  let filteredTransactions = transactions
+  
+  if (showOnlySTTTransfers) {
+    filteredTransactions = filteredTransactions.filter(tx => tx.type === 'transfer')
+  }
+  
+  if (hideZeroSTT) {
+    filteredTransactions = filteredTransactions.filter(tx => {
+      const value = parseFloat(tx.value)
+      return !isNaN(value) && value >= 0.0005
+    })
+  }
 
   return (
     <div className="min-h-screen">
@@ -149,7 +169,8 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* STT Transfer Filter */}
+            {/* Transaction Filters */}
+            <div className="flex justify-center flex-wrap gap-3">
               <label className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full px-4 py-2 shadow-md cursor-pointer hover:bg-white/90 transition-all">
                 <input
                   type="checkbox"
@@ -160,7 +181,18 @@ export default function Home() {
                 <span className="text-sm font-semibold text-gray-700">Show only STT Transfers</span>
               </label>
               
-              {/* Start/Stop Listening Button */}
+              <label className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full px-4 py-2 shadow-md cursor-pointer hover:bg-white/90 transition-all">
+                <input
+                  type="checkbox"
+                  checked={hideZeroSTT}
+                  onChange={(e) => setHideZeroSTT(e.target.checked)}
+                  className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2 cursor-pointer"
+                />
+                <span className="text-sm font-semibold text-gray-700">Hide all STT transactions that are under .0005</span>
+              </label>
+            </div>
+            
+            <div className="flex justify-center gap-3">
               <button
                 onClick={() => setIsListening(!isListening)}
                 disabled={!isConnected}
