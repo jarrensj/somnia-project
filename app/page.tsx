@@ -96,21 +96,15 @@ export default function Home() {
   const { toggleMute } = useNotifications()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-100 via-gray-100 to-slate-100 text-gray-900">
-      {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          </div>
-
-      <div className="relative z-10 p-4 md:p-6">
+    <div className="min-h-screen">
+      <div className="p-4 md:p-6">
         {/* Live Transactions Feed */}
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col gap-3 mb-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">Live Transactions</h2>
-              <div className="text-lg font-semibold text-purple-600">
-                {stats.totalTransactions.toLocaleString()} <span className="text-sm text-gray-600">total</span>
+              <h2 className="text-xl font-bold">Live Transactions</h2>
+              <div className="text-lg font-semibold">
+                {stats.totalTransactions.toLocaleString()} <span className="text-sm">total</span>
               </div>
             </div>
 
