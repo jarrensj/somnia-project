@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useBlockchain, type Transaction } from '@/lib/blockchain-hooks'
 import { useNotifications } from '@/lib/use-notifications'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -12,7 +12,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 
-function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; explorerUrl: string; networkType: 'testnet' | 'mainnet' }) {
+// Memoized transaction card to prevent unnecessary re-renders
+const TransactionCard = memo(function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; explorerUrl: string; networkType: 'testnet' | 'mainnet' }) {
   const typeVariants = {
     transfer: { variant: 'default' as const, icon: Send },
     contract: { variant: 'secondary' as const, icon: FileText },
@@ -44,10 +45,11 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
+      initial={{ opacity: 0, x: -50, scale: 0.9 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 50, scale: 0.9 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
+      layout={false}
     >
       <Card className="overflow-hidden">
         <CardHeader className="pb-3">
@@ -106,7 +108,7 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
       </Card>
     </motion.div>
   )
-}
+})
 
 export default function Home() {
   const [isListening, setIsListening] = useState(false)
@@ -136,19 +138,24 @@ export default function Home() {
     }
   }, [showFiltersDropdown])
 
-  // Filter transactions based on the checkboxes
-  let filteredTransactions = transactions
-  
-  if (showOnlySTTTransfers) {
-    filteredTransactions = filteredTransactions.filter(tx => tx.type === 'transfer')
-  }
-  
-  if (hideZeroSTT) {
-    filteredTransactions = filteredTransactions.filter(tx => {
-      const value = parseFloat(tx.value)
-      return !isNaN(value) && value >= 0.0005
-    })
-  }
+  // Memoized filtering to prevent recalculating on every render
+  const filteredTransactions = useMemo(() => {
+    let filtered = transactions
+    
+    if (showOnlySTTTransfers) {
+      filtered = filtered.filter(tx => tx.type === 'transfer')
+    }
+    
+    if (hideZeroSTT) {
+      filtered = filtered.filter(tx => {
+        const value = parseFloat(tx.value)
+        return !isNaN(value) && value >= 0.0005
+      })
+    }
+    
+    // Limit to 200 most recent for rendering performance
+    return filtered.slice(0, 200)
+  }, [transactions, showOnlySTTTransfers, hideZeroSTT])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -312,9 +319,10 @@ export default function Home() {
           )}
 
           <div className="max-h-[calc(100vh-220px)] overflow-y-auto space-y-3 pr-2">
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence initial={false}>
               {filteredTransactions.length === 0 ? (
                 <motion.div
+                  key="empty-state"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
@@ -324,8 +332,13 @@ export default function Home() {
                     <div className="flex flex-col items-center gap-6">
                       <div className="relative">
                         <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                          animate={{ rotate: [0, 360] }}
+                          transition={{ 
+                            duration: 1.5, 
+                            repeat: Infinity, 
+                            ease: "linear",
+                            repeatType: "loop"
+                          }}
                           className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full"
                         />
                         <motion.div
