@@ -168,6 +168,7 @@ export default function Home() {
                   Testnet
                 </button>
               </div>
+            </div>
 
             {/* Transaction Filters */}
             <div className="flex justify-center flex-wrap gap-3">
