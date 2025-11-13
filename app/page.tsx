@@ -45,10 +45,10 @@ const TransactionCard = memo(function TransactionCard({ tx, explorerUrl, network
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      initial={{ opacity: 0, x: -50, scale: 0.9 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 50, scale: 0.9 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       layout={false}
     >
       <Card className="overflow-hidden">
