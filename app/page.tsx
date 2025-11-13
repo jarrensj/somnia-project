@@ -197,14 +197,47 @@ export default function Home() {
             <AnimatePresence mode="popLayout">
               {transactions.length === 0 ? (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="text-center py-12 text-gray-600"
+                  className="text-center py-16"
                 >
-                  <div className="text-4xl mb-3">{isListening ? '⏳' : '▶️'}</div>
-                  <p>{isListening ? 'Waiting for transactions…' : 'Click "Start Listening" to begin'}</p>
-                  <p className="text-sm mt-2">{isListening ? 'Listening to real-time blockchain activity' : 'Press the button above to start monitoring transactions'}</p>
+                  {isListening ? (
+                    <div className="flex flex-col items-center gap-6">
+                      <div className="relative">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                          className="w-20 h-20 border-4 border-blue-200 border-t-blue-500 rounded-full"
+                        />
+                        <motion.div
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                          className="absolute inset-0 flex items-center justify-center text-3xl"
+                        >
+                          👂
+                        </motion.div>
+                      </div>
+                      <div>
+                        <p className="text-lg font-semibold mb-2">Listening for transactions...</p>
+                        <p className="text-sm text-gray-500">Real-time blockchain monitoring active</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <motion.button
+                      onClick={() => setIsListening(true)}
+                      disabled={!isConnected}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex flex-col items-center gap-4 mx-auto p-8 rounded-2xl bg-white border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:border-gray-300 disabled:hover:bg-white"
+                    >
+                      <div className="text-6xl">▶️</div>
+                      <div>
+                        <p className="text-lg font-semibold mb-1">Click to Start Listening</p>
+                        <p className="text-sm text-gray-500">Monitor live blockchain transactions</p>
+                      </div>
+                    </motion.button>
+                  )}
                 </motion.div>
               ) : (
                 transactions.map((tx) => (
