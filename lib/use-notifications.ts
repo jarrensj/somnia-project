@@ -96,6 +96,27 @@ export function useNotifications() {
     playSound({ frequency, duration, volume, waveType })
   }, [playSound])
 
+  const playTransferSound = useCallback((amount: number) => {
+    // Calculate frequency based on transfer amount
+    // Use logarithmic scale for better perception across wide value ranges
+    // Lower amounts (closer to 1 STT) = lower pitch, higher amounts = higher pitch
+    const minFreq = 400  // Low note for small amounts
+    const maxFreq = 1200 // High note for large amounts
+    
+    // Log scale: log(amount) maps to frequency range
+    // Clamp amount between 0.1 and 1000 for reasonable frequency range
+    const clampedAmount = Math.max(0.1, Math.min(1000, amount))
+    const logMin = Math.log10(0.1)
+    const logMax = Math.log10(1000)
+    const logAmount = Math.log10(clampedAmount)
+    
+    // Map logarithmic amount to frequency range
+    const normalizedValue = (logAmount - logMin) / (logMax - logMin)
+    const frequency = minFreq + (normalizedValue * (maxFreq - minFreq))
+    
+    playSound({ frequency, duration: 0.5, volume: 0.3, waveType: 'sine' })
+  }, [playSound])
+
   const mute = useCallback(() => {
     isMutedRef.current = true
   }, [])
@@ -112,6 +133,7 @@ export function useNotifications() {
   return {
     playNotification,
     playCustomSound,
+    playTransferSound,
     mute,
     unmute,
     toggleMute,
