@@ -20,7 +20,7 @@ function TransactionCard({ tx, explorerUrl }: { tx: Transaction; explorerUrl: st
   const typeLabels = {
     transfer: 'Transfer',
     contract: 'Contract Creation',
-    other: 'Contract Call'
+    other: 'Contract Interaction'
   }
 
   const shortenAddress = (addr: string | null) => {
