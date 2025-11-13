@@ -29,6 +29,16 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
     return `${addr.slice(0, 6)}…${addr.slice(-4)}`
   }
 
+  const formatSTT = (value: string) => {
+    const numValue = parseFloat(value)
+    if (numValue === 0) return '0.0000'
+    if (numValue < 0.0001) {
+      // Show more decimals for very small values
+      return numValue.toFixed(8)
+    }
+    return numValue.toFixed(4)
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -68,7 +78,7 @@ function TransactionCard({ tx, explorerUrl, networkType }: { tx: Transaction; ex
         {parseFloat(tx.value) > 0 && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500 font-medium min-w-[90px]">Amount:</span>
-            <span className="text-sm text-amber-600 font-semibold">{parseFloat(tx.value).toFixed(4)} STT</span>
+            <span className="text-sm text-amber-600 font-semibold">{formatSTT(tx.value)} STT</span>
           </div>
         )}
         
