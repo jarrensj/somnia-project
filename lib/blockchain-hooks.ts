@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { ethers } from 'ethers'
-import { useNotifications } from './use-notifications'
 
 export type NetworkType = 'testnet' | 'mainnet'
 
@@ -46,8 +45,11 @@ export interface NetworkStats {
   totalTransactions: number
 }
 
-export function useBlockchain(network: NetworkType, isListening: boolean) {
-  const { playTransferSound } = useNotifications()
+export function useBlockchain(
+  network: NetworkType, 
+  isListening: boolean,
+  playTransferSound: (amount: number) => void
+) {
   const [provider, setProvider] = useState<ethers.JsonRpcProvider | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [stats, setStats] = useState<NetworkStats>({
