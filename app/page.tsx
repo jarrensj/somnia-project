@@ -92,8 +92,14 @@ export default function Home() {
   const [isListening, setIsListening] = useState(false)
   const [network, setNetwork] = useState<'testnet' | 'mainnet'>('mainnet')
   const [isMuted, setIsMuted] = useState(false)
+  const [showOnlySTTTransfers, setShowOnlySTTTransfers] = useState(true)
   const { transactions, stats, isConnected, error, network: networkInfo } = useBlockchain(network, isListening)
   const { toggleMute } = useNotifications()
+
+  // Filter transactions based on the checkbox
+  const filteredTransactions = showOnlySTTTransfers
+    ? transactions.filter(tx => tx.type === 'transfer' && parseFloat(tx.value) > 0)
+    : transactions
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-100 via-gray-100 to-slate-100 text-gray-900">
@@ -144,6 +150,19 @@ export default function Home() {
                   🚀 Mainnet
                 </button>
               </div>
+            </div>
+
+            {/* STT Transfer Filter */}
+            <div className="flex justify-center">
+              <label className="flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full px-4 py-2 shadow-md cursor-pointer hover:bg-white/90 transition-all">
+                <input
+                  type="checkbox"
+                  checked={showOnlySTTTransfers}
+                  onChange={(e) => setShowOnlySTTTransfers(e.target.checked)}
+                  className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2 cursor-pointer"
+                />
+                <span className="text-sm font-semibold text-gray-700">Show only STT Transfers</span>
+              </label>
             </div>
             
             <div className="flex justify-center gap-3">
@@ -201,7 +220,7 @@ export default function Home() {
 
           <div className="max-h-[calc(100vh-220px)] overflow-y-auto space-y-3 pr-2">
             <AnimatePresence mode="popLayout">
-              {transactions.length === 0 ? (
+              {filteredTransactions.length === 0 ? (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -213,7 +232,7 @@ export default function Home() {
                   <p className="text-sm mt-2">{isListening ? 'Listening to real-time blockchain activity' : 'Press the button above to start monitoring transactions'}</p>
                 </motion.div>
               ) : (
-                transactions.map((tx) => (
+                filteredTransactions.map((tx) => (
                   <TransactionCard key={tx.hash} tx={tx} explorerUrl={networkInfo.explorerUrl} networkType={network} />
                 ))
               )}
