@@ -51,8 +51,8 @@ const TransactionCard = memo(function TransactionCard({ tx, explorerUrl, network
       transition={{ duration: 0.3, ease: "easeOut" }}
       layout={false}
     >
-      <Card className="overflow-hidden">
-        <CardHeader className="pb-3">
+      <Card className="overflow-hidden py-2 gap-2">
+        <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Badge variant={typeVariants[tx.type].variant} className="gap-1.5">
@@ -66,34 +66,42 @@ const TransactionCard = memo(function TransactionCard({ tx, explorerUrl, network
           </div>
         </CardHeader>
         
-        <CardContent className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground font-medium min-w-[90px]">TX Hash:</span>
-            <code className="text-xs font-mono">{shortenAddress(tx.hash)}</code>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground font-medium min-w-[90px]">From Wallet:</span>
-            <code className="text-xs font-mono text-green-600 dark:text-green-400">{shortenAddress(tx.from)}</code>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground font-medium min-w-[90px]">
-              {tx.type === 'transfer' ? 'To Wallet:' : tx.type === 'contract' ? 'Deploying:' : 'Contract:'}
-            </span>
-            <code className="text-xs font-mono text-blue-600 dark:text-blue-400">{shortenAddress(tx.to)}</code>
-          </div>
-          
-          {parseFloat(tx.value) > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground font-medium min-w-[90px]">Amount:</span>
-              <Badge variant="outline" className="text-amber-600 dark:text-amber-400 font-semibold">
-                {formatSTT(tx.value)} STT
-              </Badge>
+        <CardContent>
+          <div className="flex gap-4 mb-2">
+            {/* Left side: TX Hash and Amount */}
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground font-medium min-w-[70px]">TX Hash:</span>
+                <code className="text-xs font-mono">{shortenAddress(tx.hash)}</code>
+              </div>
+              
+              {parseFloat(tx.value) > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground font-medium min-w-[70px]">Amount:</span>
+                  <Badge variant="outline" className="text-amber-600 dark:text-amber-400 font-semibold">
+                    {formatSTT(tx.value)} STT
+                  </Badge>
+                </div>
+              )}
             </div>
-          )}
+            
+            {/* Right side: From and To */}
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground font-medium min-w-[70px]">From:</span>
+                <code className="text-xs font-mono text-green-600 dark:text-green-400">{shortenAddress(tx.from)}</code>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground font-medium min-w-[70px]">
+                  {tx.type === 'transfer' ? 'To:' : tx.type === 'contract' ? 'Deploy:' : 'Contract:'}
+                </span>
+                <code className="text-xs font-mono text-blue-600 dark:text-blue-400">{shortenAddress(tx.to)}</code>
+              </div>
+            </div>
+          </div>
           
-          <Separator className="my-2" />
+          <Separator className="my-1.5" />
           
           <a
             href={`${explorerUrl}/tx/${tx.hash}`}
