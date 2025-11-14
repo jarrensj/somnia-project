@@ -198,8 +198,8 @@ export function useBlockchain(
           totalTransactions: prev.totalTransactions + txCount
         }))
 
-        // Update transactions list (keep most recent 2000 for high-throughput network)
-        setTransactions(prev => [...newTxs, ...prev].slice(0, 2000))
+        // Update transactions list (keep all transactions)
+        setTransactions(prev => [...newTxs, ...prev])
       } catch (err) {
         console.error('Error handling block:', err)
       }

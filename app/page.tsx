@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo, memo } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useBlockchain, type Transaction } from '@/lib/blockchain-hooks'
 import { useNotifications } from '@/lib/use-notifications'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -12,8 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 
-// Memoized transaction card to prevent unnecessary re-renders
-const TransactionCard = memo(function TransactionCard({ tx, explorerUrl, networkType, tokenSymbol }: { tx: Transaction; explorerUrl: string; networkType: 'testnet' | 'mainnet'; tokenSymbol: string }) {
+function TransactionCard({ tx, explorerUrl, networkType, tokenSymbol }: { tx: Transaction; explorerUrl: string; networkType: 'testnet' | 'mainnet'; tokenSymbol: string }) {
   const typeVariants = {
     transfer: { variant: 'default' as const, icon: Send },
     contract: { variant: 'secondary' as const, icon: FileText },
@@ -45,11 +44,10 @@ const TransactionCard = memo(function TransactionCard({ tx, explorerUrl, network
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -50, scale: 0.9 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
-      exit={{ opacity: 0, x: 50, scale: 0.9 }}
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      layout={false}
     >
       <Card className="overflow-hidden py-2 gap-2">
         <CardHeader className="pb-2">
@@ -116,7 +114,7 @@ const TransactionCard = memo(function TransactionCard({ tx, explorerUrl, network
       </Card>
     </motion.div>
   )
-})
+}
 
 export default function Home() {
   const [isListening, setIsListening] = useState(false)
@@ -146,24 +144,19 @@ export default function Home() {
     }
   }, [showFiltersDropdown])
 
-  // Memoized filtering to prevent recalculating on every render
-  const filteredTransactions = useMemo(() => {
-    let filtered = transactions
-    
-    if (showOnlySTTTransfers) {
-      filtered = filtered.filter(tx => tx.type === 'transfer')
-    }
-    
-    if (hideZeroSTT) {
-      filtered = filtered.filter(tx => {
-        const value = parseFloat(tx.value)
-        return !isNaN(value) && value >= 0.0005
-      })
-    }
-    
-    // Limit to 200 most recent for rendering performance
-    return filtered.slice(0, 200)
-  }, [transactions, showOnlySTTTransfers, hideZeroSTT])
+  // Filter transactions based on the checkboxes
+  let filteredTransactions = transactions
+  
+  if (showOnlySTTTransfers) {
+    filteredTransactions = filteredTransactions.filter(tx => tx.type === 'transfer')
+  }
+  
+  if (hideZeroSTT) {
+    filteredTransactions = filteredTransactions.filter(tx => {
+      const value = parseFloat(tx.value)
+      return !isNaN(value) && value >= 0.0005
+    })
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
