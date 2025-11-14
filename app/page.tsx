@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { MusicStaffBackground, type MusicStaffBackgroundRef } from '@/components/MusicStaffBackground'
+import { SendTokenDialog } from '@/components/SendTokenDialog'
 
 function TransactionCard({ tx, explorerUrl, networkType, tokenSymbol }: { tx: Transaction; explorerUrl: string; networkType: 'testnet' | 'mainnet'; tokenSymbol: string }) {
   const [isPressed, setIsPressed] = useState(false)
@@ -228,6 +229,9 @@ export default function Home() {
 
             {/* Controls Row */}
             <div className="flex justify-center items-center gap-3 flex-wrap">
+              {/* Send Token Button */}
+              <SendTokenDialog network={networkInfo} />
+              
               {/* Network Selector */}
               <div className="inline-flex rounded-lg border bg-card p-1 shadow-sm">
                 <Button
