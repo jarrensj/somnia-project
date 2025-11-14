@@ -119,7 +119,7 @@ export default function Home() {
   const [showFiltersDropdown, setShowFiltersDropdown] = useState(false)
   const filtersDropdownRef = useRef<HTMLDivElement>(null)
   const { toggleMute, playTransferSound, playCustomSound } = useNotifications()
-  const { transactions, stats, isConnected, error, network: networkInfo } = useBlockchain(network, isListening, playTransferSound, playCustomSound)
+  const { transactions, stats, isConnected, error, network: networkInfo } = useBlockchain(network, isListening, playTransferSound, playCustomSound, showOnlySTTTransfers, hideZeroSTT)
 
   // Close dropdown when clicking outside
   useEffect(() => {

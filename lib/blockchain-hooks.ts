@@ -49,7 +49,9 @@ export function useBlockchain(
   network: NetworkType, 
   isListening: boolean,
   playTransferSound: (amount: number) => void,
-  playCustomSound: (frequency: number, duration: number, volume: number, waveType: OscillatorType) => void
+  playCustomSound: (frequency: number, duration: number, volume: number, waveType: OscillatorType) => void,
+  showOnlySTTTransfers: boolean,
+  hideZeroSTT: boolean
 ) {
   const [provider, setProvider] = useState<ethers.JsonRpcProvider | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -161,13 +163,17 @@ export function useBlockchain(
         }
         
         // Play pitch-scaled sounds for each qualifying transfer
+        const filtersActive = showOnlySTTTransfers && hideZeroSTT
+        
         transfersForSound.forEach((amount, index) => {
           setTimeout(() => {
             if (amount > 0 && amount < 0.0005) {
-              // Extremely quiet, barely audible sound for tiny transfers
-              playCustomSound(200, 0.1, 0.04, 'sine') // Very low frequency, very short, very quiet
-            } else {
-              // Normal pitch-scaled sound for regular transfers
+              // Only play tiny transfer sounds when filters are OFF
+              if (!filtersActive) {
+                playCustomSound(200, 0.1, 0.04, 'sine') // Very low frequency, very short, very quiet
+              }
+            } else if (amount >= 0.0005) {
+              // Play alert sounds for meaningful transfers (≥ 0.0005 STT)
               playTransferSound(amount)
             }
           }, index * 600) // Stagger sounds by 600ms
@@ -207,7 +213,7 @@ export function useBlockchain(
     return () => {
       provider.off('block', handleBlock)
     }
-  }, [provider, isListening])
+  }, [provider, isListening, showOnlySTTTransfers, hideZeroSTT, playTransferSound, playCustomSound])
 
   return {
     transactions,
