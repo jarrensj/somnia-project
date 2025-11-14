@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
-import { MusicStaffBackground } from '@/components/MusicStaffBackground'
+import { MusicStaffBackground, type MusicStaffBackgroundRef } from '@/components/MusicStaffBackground'
 
 function TransactionCard({ tx, explorerUrl, networkType, tokenSymbol }: { tx: Transaction; explorerUrl: string; networkType: 'testnet' | 'mainnet'; tokenSymbol: string }) {
   const typeVariants = {
@@ -125,8 +125,35 @@ export default function Home() {
   const [hideZeroSTT, setHideZeroSTT] = useState(true)
   const [showFiltersDropdown, setShowFiltersDropdown] = useState(false)
   const filtersDropdownRef = useRef<HTMLDivElement>(null)
+  const musicBackgroundRef = useRef<MusicStaffBackgroundRef>(null)
   const { toggleMute, playTransferSound, playCustomSound } = useNotifications()
-  const { transactions, stats, isConnected, error, network: networkInfo } = useBlockchain(network, isListening, playTransferSound, playCustomSound, showOnlySTTTransfers, hideZeroSTT)
+  
+  // Wrapper functions that also spawn visual notes
+  const playTransferSoundWithNote = (amount: number) => {
+    playTransferSound(amount)
+    // Calculate frequency same as in useNotifications hook
+    const minFreq = 500
+    const maxFreq = 1400
+    const clampedAmount = Math.max(0.1, Math.min(1000, amount))
+    const logMin = Math.log10(0.1)
+    const logMax = Math.log10(1000)
+    const logAmount = Math.log10(clampedAmount)
+    const normalizedValue = (logAmount - logMin) / (logMax - logMin)
+    const frequency = minFreq + (normalizedValue * (maxFreq - minFreq))
+    
+    // Spawn 2 notes for the two-tone sound
+    musicBackgroundRef.current?.spawnNote(frequency)
+    setTimeout(() => {
+      musicBackgroundRef.current?.spawnNote(frequency * 1.25)
+    }, 150)
+  }
+  
+  const playCustomSoundWithNote = (frequency: number, duration?: number, volume?: number, waveType?: OscillatorType) => {
+    playCustomSound(frequency, duration, volume, waveType)
+    musicBackgroundRef.current?.spawnNote(frequency)
+  }
+  
+  const { transactions, stats, isConnected, error, network: networkInfo } = useBlockchain(network, isListening, playTransferSoundWithNote, playCustomSoundWithNote, showOnlySTTTransfers, hideZeroSTT)
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -161,7 +188,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#f9f6f1] relative overflow-hidden">
-      <MusicStaffBackground />
+      <MusicStaffBackground ref={musicBackgroundRef} />
 
       <div className="p-4 md:p-6 relative z-10">
         {/* Live Transactions Feed */}

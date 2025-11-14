@@ -198,8 +198,18 @@ export function useBlockchain(
           totalTransactions: prev.totalTransactions + txCount
         }))
 
-        // Update transactions list (keep all transactions)
-        setTransactions(prev => [...newTxs, ...prev])
+        // Update transactions list (keep all transactions, deduplicate by hash)
+        setTransactions(prev => {
+          const combined = [...newTxs, ...prev]
+          const seen = new Set<string>()
+          return combined.filter(tx => {
+            if (seen.has(tx.hash)) {
+              return false
+            }
+            seen.add(tx.hash)
+            return true
+          })
+        })
       } catch (err) {
         console.error('Error handling block:', err)
       }
