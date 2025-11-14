@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
+import { MusicStaffBackground } from '@/components/MusicStaffBackground'
 
 function TransactionCard({ tx, explorerUrl, networkType, tokenSymbol }: { tx: Transaction; explorerUrl: string; networkType: 'testnet' | 'mainnet'; tokenSymbol: string }) {
   const typeVariants = {
@@ -159,8 +160,10 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="p-4 md:p-6">
+    <div className="min-h-screen bg-[#f9f6f1] relative overflow-hidden">
+      <MusicStaffBackground />
+
+      <div className="p-4 md:p-6 relative z-10">
         {/* Live Transactions Feed */}
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col gap-3 mb-4">
