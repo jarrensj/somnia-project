@@ -45,13 +45,39 @@ export interface NetworkStats {
   totalTransactions: number
 }
 
+// ERC-20 Transfer event signature: Transfer(address,address,uint256)
+const TRANSFER_EVENT_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+
+// Helper function to check if transaction is an ERC-20 transfer to a specific token
+function isERC20Transfer(tx: ethers.TransactionResponse, tokenAddress: string): { isTransfer: boolean; amount: string } {
+  // Check if tx.to matches the token address and if there's data
+  if (tx.to?.toLowerCase() !== tokenAddress.toLowerCase() || !tx.data) {
+    return { isTransfer: false, amount: '0' }
+  }
+  
+  // Check for transfer(address,uint256) function signature: 0xa9059cbb
+  if (tx.data.startsWith('0xa9059cbb') && tx.data.length >= 138) {
+    try {
+      // Extract amount from the data (last 32 bytes)
+      const amountHex = '0x' + tx.data.slice(74, 138)
+      const amount = ethers.formatEther(amountHex)
+      return { isTransfer: true, amount }
+    } catch {
+      return { isTransfer: false, amount: '0' }
+    }
+  }
+  
+  return { isTransfer: false, amount: '0' }
+}
+
 export function useBlockchain(
   network: NetworkType, 
   isListening: boolean,
   playTransferSound: (amount: number) => void,
   playCustomSound: (frequency: number, duration: number, volume: number, waveType: OscillatorType) => void,
   showOnlySTTTransfers: boolean,
-  hideZeroSTT: boolean
+  hideZeroSTT: boolean,
+  customTokenAddress?: string
 ) {
   const [provider, setProvider] = useState<ethers.JsonRpcProvider | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -125,6 +151,7 @@ export function useBlockchain(
         // Process transactions
         const newTxs: Transaction[] = []
         const transfersForSound: number[] = [] // Store transfer amounts for sound
+        const isMonitoringCustomToken = customTokenAddress && ethers.isAddress(customTokenAddress)
 
         if (block.transactions && Array.isArray(block.transactions)) {
           for (const txHash of block.transactions.slice(0, 10)) {
@@ -133,26 +160,50 @@ export function useBlockchain(
                 const tx = await provider.getTransaction(txHash)
                 if (tx) {
                   let txType: 'transfer' | 'contract' | 'other' = 'other'
-                  if (tx.to === null) {
-                    txType = 'contract'
-                  } else if (tx.data === '0x' || tx.data === '0x0') {
-                    txType = 'transfer'
+                  let transferValue = '0'
+                  let shouldInclude = false
+                  
+                  // If monitoring a custom token, check for ERC-20 transfers
+                  if (isMonitoringCustomToken) {
+                    const erc20Check = isERC20Transfer(tx, customTokenAddress)
+                    if (erc20Check.isTransfer) {
+                      txType = 'transfer'
+                      transferValue = erc20Check.amount
+                      shouldInclude = true
+                    }
+                  } else {
+                    // Monitor native token transfers
+                    if (tx.to === null) {
+                      txType = 'contract'
+                      transferValue = ethers.formatEther(tx.value)
+                      shouldInclude = true
+                    } else if (tx.data === '0x' || tx.data === '0x0') {
+                      txType = 'transfer'
+                      transferValue = ethers.formatEther(tx.value)
+                      shouldInclude = true
+                    } else {
+                      txType = 'other'
+                      transferValue = ethers.formatEther(tx.value)
+                      shouldInclude = true
+                    }
                   }
 
-                  const txData = {
-                    hash: tx.hash,
-                    from: tx.from,
-                    to: tx.to,
-                    value: ethers.formatEther(tx.value),
-                    timestamp: Date.now(),
-                    type: txType
-                  }
-                  
-                  newTxs.push(txData)
-                  
-                  // Store transfer amounts for pitch-based sound
-                  if (txType === 'transfer' && parseFloat(txData.value) >= 0) {
-                    transfersForSound.push(parseFloat(txData.value))
+                  if (shouldInclude) {
+                    const txData = {
+                      hash: tx.hash,
+                      from: tx.from,
+                      to: tx.to,
+                      value: transferValue,
+                      timestamp: Date.now(),
+                      type: txType
+                    }
+                    
+                    newTxs.push(txData)
+                    
+                    // Store transfer amounts for pitch-based sound
+                    if (txType === 'transfer' && parseFloat(txData.value) >= 0) {
+                      transfersForSound.push(parseFloat(txData.value))
+                    }
                   }
                 }
               }
@@ -223,7 +274,7 @@ export function useBlockchain(
     return () => {
       provider.off('block', handleBlock)
     }
-  }, [provider, isListening, showOnlySTTTransfers, hideZeroSTT, playTransferSound, playCustomSound])
+  }, [provider, isListening, showOnlySTTTransfers, hideZeroSTT, playTransferSound, playCustomSound, customTokenAddress])
 
   return {
     transactions,

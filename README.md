@@ -1,5 +1,10 @@
-This project uses Somnia Data Streams to listen to data on the blockchain. The projects listens to the data streams and if there is a transfer transaction, a noise / beat is played by this application. Depending on the size of the transfer, the noise / beat is affected accordingly. This helps the user keep an ongoing pulse of the ticker or whatever they are monitoring and this project specifically monitors SOMI transfers for the user. They can listen (literally) to the transactions of all SOMI transfers on the chain. 
+# Data Stream Composer 
 
+This project uses Somnia Data Streams to listen to data on the blockchain. The projects listens to the data streams and if there is a transfer transaction, a noise / beat is played by this application. Depending on the size of the transfer, the noise / beat is affected accordingly. This helps the user keep an ongoing pulse of the ticker or whatever they are monitoring. 
+
+Users can monitor either native SOMI token transfers or any custom ERC-20 token of their choice by entering the token contract address in the Filters menu. They can listen (literally) to the transactions happening on the chain in real-time. 
+
+The project composes audio for the user to hear the stream and be able to react to.
 
 ## Getting Started
 

@@ -124,6 +124,8 @@ export default function Home() {
   const [showOnlySTTTransfers, setShowOnlySTTTransfers] = useState(true)
   const [hideZeroSTT, setHideZeroSTT] = useState(true)
   const [showFiltersDropdown, setShowFiltersDropdown] = useState(false)
+  const [customTokenAddress, setCustomTokenAddress] = useState<string>('')
+  const [tokenSymbolInput, setTokenSymbolInput] = useState<string>('')
   const filtersDropdownRef = useRef<HTMLDivElement>(null)
   const musicBackgroundRef = useRef<MusicStaffBackgroundRef>(null)
   const { toggleMute, playTransferSound, playCustomSound } = useNotifications()
@@ -153,7 +155,8 @@ export default function Home() {
     musicBackgroundRef.current?.spawnNote(frequency)
   }
   
-  const { transactions, stats, isConnected, error, network: networkInfo } = useBlockchain(network, isListening, playTransferSoundWithNote, playCustomSoundWithNote, showOnlySTTTransfers, hideZeroSTT)
+  const { transactions, stats, isConnected, error, network: networkInfo } = useBlockchain(network, isListening, playTransferSoundWithNote, playCustomSoundWithNote, showOnlySTTTransfers, hideZeroSTT, customTokenAddress.trim())
+  const displayTokenSymbol = tokenSymbolInput.trim() || networkInfo.symbol
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -244,9 +247,30 @@ export default function Home() {
                 </Button>
                 
                 {showFiltersDropdown && (
-                  <div className="absolute top-full mt-2 left-0 bg-card border rounded-lg shadow-lg p-3 space-y-3 z-50 min-w-[280px]">
+                  <div className="absolute top-full mt-2 left-0 bg-card border rounded-lg shadow-lg p-3 space-y-3 z-50 min-w-[320px]">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Monitor Custom Token</label>
+                      <input
+                        type="text"
+                        placeholder="Token contract address (0x...)"
+                        value={customTokenAddress}
+                        onChange={(e) => setCustomTokenAddress(e.target.value)}
+                        className={`w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary ${customTokenAddress && !customTokenAddress.startsWith('0x') ? 'border-yellow-500' : ''}`}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Token symbol (optional)"
+                        value={tokenSymbolInput}
+                        onChange={(e) => setTokenSymbolInput(e.target.value)}
+                        className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                      <p className="text-xs text-muted-foreground">Leave empty to monitor native {networkInfo.symbol}</p>
+                    </div>
+                    
+                    <Separator />
+                    
                     <label className="flex items-center justify-between gap-3 cursor-pointer hover:bg-accent/50 p-2 rounded-md transition-all">
-                      <span className="text-sm font-medium">Show only {networkInfo.symbol} Transfers</span>
+                      <span className="text-sm font-medium">Show only {displayTokenSymbol} Transfers</span>
                       <Switch
                         checked={showOnlySTTTransfers}
                         onCheckedChange={setShowOnlySTTTransfers}
@@ -256,7 +280,7 @@ export default function Home() {
                     <Separator />
                     
                     <label className="flex items-center justify-between gap-3 cursor-pointer hover:bg-accent/50 p-2 rounded-md transition-all">
-                      <span className="text-sm font-medium">Hide {networkInfo.symbol} under 0.0005</span>
+                      <span className="text-sm font-medium">Hide {displayTokenSymbol} under 0.0005</span>
                       <Switch
                         checked={hideZeroSTT}
                         onCheckedChange={setHideZeroSTT}
@@ -321,17 +345,24 @@ export default function Home() {
                 {networkInfo.name} • {networkInfo.symbol}
               </Badge>
               
+              {customTokenAddress && (
+                <Badge variant="secondary" className="gap-1.5">
+                  <Filter size={12} />
+                  Monitoring {displayTokenSymbol}
+                </Badge>
+              )}
+              
               {showOnlySTTTransfers && (
                 <Badge variant="secondary" className="gap-1.5">
                   <Filter size={12} />
-                  Only {networkInfo.symbol} Transfers
+                  Only {displayTokenSymbol} Transfers
                 </Badge>
               )}
               
               {hideZeroSTT && (
                 <Badge variant="secondary" className="gap-1.5">
                   <Filter size={12} />
-                  Min 0.0005 {networkInfo.symbol}
+                  Min 0.0005 {displayTokenSymbol}
                 </Badge>
               )}
             </div>
@@ -413,7 +444,7 @@ export default function Home() {
                 </motion.div>
               ) : (
                 filteredTransactions.map((tx) => (
-                  <TransactionCard key={tx.hash} tx={tx} explorerUrl={networkInfo.explorerUrl} networkType={network} tokenSymbol={networkInfo.symbol} />
+                  <TransactionCard key={tx.hash} tx={tx} explorerUrl={networkInfo.explorerUrl} networkType={network} tokenSymbol={displayTokenSymbol} />
                 ))
               )}
             </AnimatePresence>

@@ -98,8 +98,8 @@ export const MusicStaffBackground = forwardRef<MusicStaffBackgroundRef>((props, 
               }}
               animate={{
                 y: `${note.y - 50}vh`,
-                opacity: [0, 1, 1, 0],
-                scale: [0, 1.2, 1, 0.8],
+                opacity: [0, 0.5, 0.4, 0],
+                scale: [0, 1, 1, 0.9],
                 rotate: 20
               }}
               exit={{
@@ -108,9 +108,9 @@ export const MusicStaffBackground = forwardRef<MusicStaffBackgroundRef>((props, 
               }}
               transition={{
                 duration: note.duration,
-                ease: "easeOut",
+                ease: "easeInOut",
                 opacity: {
-                  times: [0, 0.2, 0.7, 1],
+                  times: [0, 0.15, 0.75, 1],
                   duration: note.duration
                 }
               }}
@@ -118,8 +118,8 @@ export const MusicStaffBackground = forwardRef<MusicStaffBackgroundRef>((props, 
                 position: 'absolute',
                 fontSize: `${note.size}px`,
                 color: note.color,
-                textShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.5))'
+                textShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.3))'
               }}
             >
               {note.symbol}
