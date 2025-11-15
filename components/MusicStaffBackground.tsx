@@ -68,6 +68,21 @@ export const MusicStaffBackground = forwardRef<MusicStaffBackgroundRef>((props, 
               marginTop: groupIndex === 0 ? '80px' : '60px',
             }}
           >
+            {/* Treble Clef */}
+            <div 
+              className="absolute left-4 z-10"
+              style={{
+                top: '-18px',
+                fontSize: '96px',
+                color: '#8b7355',
+                opacity: 0.4,
+                lineHeight: 1,
+                fontFamily: 'serif',
+              }}
+            >
+              𝄞
+            </div>
+
             {/* Five staff lines per group */}
             {[...Array(5)].map((_, lineIndex) => (
               <div
