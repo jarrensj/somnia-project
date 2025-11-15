@@ -14,6 +14,8 @@ import { Separator } from '@/components/ui/separator'
 import { MusicStaffBackground, type MusicStaffBackgroundRef } from '@/components/MusicStaffBackground'
 
 function TransactionCard({ tx, explorerUrl, networkType, tokenSymbol }: { tx: Transaction; explorerUrl: string; networkType: 'testnet' | 'mainnet'; tokenSymbol: string }) {
+  const [isPressed, setIsPressed] = useState(false)
+  
   const typeVariants = {
     transfer: { variant: 'default' as const, icon: Send },
     contract: { variant: 'secondary' as const, icon: FileText },
@@ -43,12 +45,33 @@ function TransactionCard({ tx, explorerUrl, networkType, tokenSymbol }: { tx: Tr
 
   const TypeIcon = typeVariants[tx.type].icon
 
+  // Trigger press animation synced with sound
+  useEffect(() => {
+    const delay = tx.soundDelay || 0
+    let resetTimer: NodeJS.Timeout
+    
+    const pressTimer = setTimeout(() => {
+      setIsPressed(true)
+      
+      // Reset animation after it completes
+      resetTimer = setTimeout(() => {
+        setIsPressed(false)
+      }, 600)
+    }, delay)
+    
+    return () => {
+      clearTimeout(pressTimer)
+      if (resetTimer) clearTimeout(resetTimer)
+    }
+  }, [tx.soundDelay])
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
+      className={isPressed ? 'animate-auto-key-strike' : ''}
     >
       <Card className="overflow-hidden py-2 gap-2">
         <CardHeader className="pb-2">

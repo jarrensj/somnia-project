@@ -37,6 +37,7 @@ export interface Transaction {
   value: string
   timestamp: number
   type: 'transfer' | 'contract' | 'other'
+  soundDelay?: number // Delay in ms before sound plays
 }
 
 export interface NetworkStats {
@@ -151,9 +152,13 @@ export function useBlockchain(
         // Process transactions
         const newTxs: Transaction[] = []
         const transfersForSound: number[] = [] // Store transfer amounts for sound
+        const transferIndexMap = new Map<string, number>() // Map tx hash to transfersForSound index
         const isMonitoringCustomToken = customTokenAddress && ethers.isAddress(customTokenAddress)
+        const baseTimestamp = Date.now()
+        let txIndex = 0
 
         if (block.transactions && Array.isArray(block.transactions)) {
+          let txIndex = 0
           for (const txHash of block.transactions.slice(0, 10)) {
             try {
               if (typeof txHash === 'string') {
@@ -189,19 +194,22 @@ export function useBlockchain(
                   }
 
                   if (shouldInclude) {
-                    const txData = {
+                    const txData: Transaction = {
                       hash: tx.hash,
                       from: tx.from,
                       to: tx.to,
                       value: transferValue,
-                      timestamp: Date.now(),
-                      type: txType
+                      timestamp: baseTimestamp + txIndex, // Add index for sequential timestamps
+                      type: txType,
+                      soundDelay: 0 // Will be set later
                     }
                     
                     newTxs.push(txData)
+                    txIndex++
                     
-                    // Store transfer amounts for pitch-based sound
+                    // Store transfer amounts for pitch-based sound and track index
                     if (txType === 'transfer' && parseFloat(txData.value) >= 0) {
+                      transferIndexMap.set(tx.hash, transfersForSound.length)
                       transfersForSound.push(parseFloat(txData.value))
                     }
                   }
@@ -213,8 +221,24 @@ export function useBlockchain(
           }
         }
         
-        // Play pitch-scaled sounds for each qualifying transfer
+        // Calculate sound delays based on transfersForSound array index
+        // This matches how sounds are actually played (forEach with index * 600)
         const filtersActive = showOnlySTTTransfers && hideZeroSTT
+        
+        newTxs.forEach((txData) => {
+          const transferIndex = transferIndexMap.get(txData.hash)
+          if (transferIndex !== undefined) {
+            const amount = parseFloat(txData.value)
+            const willPlaySound = (amount >= 0.0005) || (!filtersActive && amount > 0 && amount < 0.0005)
+            
+            // Only set delay if sound will actually play
+            if (willPlaySound) {
+              txData.soundDelay = transferIndex * 600
+            }
+          }
+        })
+        
+        // Play pitch-scaled sounds for each qualifying transfer
         
         transfersForSound.forEach((amount, index) => {
           setTimeout(() => {
@@ -250,8 +274,10 @@ export function useBlockchain(
         }))
 
         // Update transactions list (keep all transactions, deduplicate by hash)
+        // Reverse new transactions so newest (highest timestamp) appear at top
         setTransactions(prev => {
-          const combined = [...newTxs, ...prev]
+          const reversedNewTxs = [...newTxs].reverse()
+          const combined = [...reversedNewTxs, ...prev]
           const seen = new Set<string>()
           return combined.filter(tx => {
             if (seen.has(tx.hash)) {
