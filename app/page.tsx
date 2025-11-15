@@ -275,7 +275,7 @@ export default function Home() {
                       <label className="text-sm font-medium">Monitor Custom Token</label>
                       <input
                         type="text"
-                        placeholder="Token contract address (0x...)"
+                        placeholder="Token contract address (0x)…"
                         value={customTokenAddress}
                         onChange={(e) => setCustomTokenAddress(e.target.value)}
                         className={`w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary ${customTokenAddress && !customTokenAddress.startsWith('0x') ? 'border-yellow-500' : ''}`}
@@ -435,7 +435,7 @@ export default function Home() {
                         </motion.div>
                       </div>
                       <div>
-                        <p className="text-lg font-semibold mb-2">Listening for transactions...</p>
+                        <p className="text-lg font-semibold mb-2">Listening for transactions…</p>
                         <p className="text-sm text-muted-foreground">Real-time blockchain monitoring active</p>
                       </div>
                     </div>
