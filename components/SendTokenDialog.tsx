@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ethers } from 'ethers'
-import { Send, Wallet, Loader2 } from 'lucide-react'
+import { Send, Wallet, Loader2, ExternalLink } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ interface SendTokenDialogProps {
     symbol: string
     chainId: number
     rpcUrl: string
+    explorerUrl: string
   }
 }
 
@@ -37,6 +38,7 @@ export function SendTokenDialog({ network }: SendTokenDialogProps) {
   const [isSending, setIsSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [txHash, setTxHash] = useState<string | null>(null)
 
   const connectWallet = async () => {
     setIsConnecting(true)
@@ -170,6 +172,7 @@ export function SendTokenDialog({ network }: SendTokenDialogProps) {
     setIsSending(true)
     setError(null)
     setSuccess(null)
+    setTxHash(null)
 
     try {
       // Get the MetaMask provider
@@ -215,12 +218,13 @@ export function SendTokenDialog({ network }: SendTokenDialogProps) {
         value: ethers.parseEther(amount)
       })
 
-      setSuccess(`Transaction sent! Hash: ${tx.hash}`)
+      setTxHash(tx.hash)
+      setSuccess('Transaction sent! Waiting for confirmation...')
       
       // Wait for confirmation
       await tx.wait()
       
-      setSuccess(`Transaction confirmed! Hash: ${tx.hash}`)
+      setSuccess('Transaction confirmed!')
       
       // Update balance
       await refreshBalance()
@@ -373,7 +377,20 @@ export function SendTokenDialog({ network }: SendTokenDialogProps) {
           {/* Success Message */}
           {success && (
             <Alert>
-              <AlertDescription className="break-all">{success}</AlertDescription>
+              <AlertDescription className="space-y-2">
+                <div>{success}</div>
+                {txHash && (
+                  <a
+                    href={`${network.explorerUrl}/tx/${txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline font-medium flex items-center gap-1.5 text-sm"
+                  >
+                    View transaction
+                    <ExternalLink size={14} />
+                  </a>
+                )}
+              </AlertDescription>
             </Alert>
           )}
         </div>
@@ -390,6 +407,7 @@ export function SendTokenDialog({ network }: SendTokenDialogProps) {
                   setAmount('')
                   setError(null)
                   setSuccess(null)
+                  setTxHash(null)
                 }}
                 disabled={isSending}
               >
