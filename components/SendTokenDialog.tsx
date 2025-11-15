@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ethers } from 'ethers'
-import { Send, Wallet, Loader2, ExternalLink } from 'lucide-react'
+import { Send, Wallet, Loader2, ExternalLink, CheckCircle2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -332,11 +332,9 @@ export function SendTokenDialog({ network }: SendTokenDialogProps) {
                     </AlertDescription>
                   </Alert>
                 )}
-                <Alert className="mt-2">
-                  <AlertDescription className="text-xs">
-                    Not your wallet? Click <strong>Disconnect</strong> below and reconnect with the correct account in MetaMask.
-                  </AlertDescription>
-                </Alert>
+                <div className="mt-2 text-xs text-muted-foreground">
+                  Wrong wallet? Click <strong className="text-foreground">Disconnect</strong> to switch accounts.
+                </div>
               </div>
 
               {/* Recipient Address */}
@@ -376,18 +374,19 @@ export function SendTokenDialog({ network }: SendTokenDialogProps) {
 
           {/* Success Message */}
           {success && (
-            <Alert>
-              <AlertDescription className="space-y-2">
-                <div>{success}</div>
+            <Alert className="border-green-500/50 bg-green-500/10">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertDescription>
+                <div className="font-semibold text-green-900 dark:text-green-100 mb-2">{success}</div>
                 {txHash && (
                   <a
                     href={`${network.explorerUrl}/tx/${txHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary hover:underline font-medium flex items-center gap-1.5 text-sm"
+                    className="text-xs text-primary hover:underline font-medium flex items-center gap-1.5"
                   >
-                    View transaction
                     <ExternalLink size={14} />
+                    View on Explorer
                   </a>
                 )}
               </AlertDescription>
